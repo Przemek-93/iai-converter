@@ -1,0 +1,31 @@
+version: '3.4'
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: verysecret
+      MYSQL_DATABASE: database
+      MYSQL_USER: converter
+      MYSQL_PASSWORD: secret
+    ports:
+      - '3306:3306'
+  php:
+    build: docker/php-fpm
+    ports:
+      - '9002:9000'
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      XDEBUG_CONFIG: remote_host=172.18.0.1 remote_port=9000
+      PHP_IDE_CONFIG: serverName=Docker
+    links:
+      - db
+  nginx:
+    build: docker/nginx
+    ports:
+      - '8080:80'
+    links:
+      - php
+    volumes:
+      - ./logs/nginx/:/var/log/nginx:cached
