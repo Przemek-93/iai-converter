@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}IAI XML Converter{% endblock %}
+
+{% block body %}
+    <style>
+        .header {
+            display: flex;
+            justify-content: center;
+            padding: 2em;
+            font-weight: bold;
+        }
+        .select-container {
+            margin-left: auto;
+            margin-right: auto;
+            width: 50%;
+            display: block;
+        }
+        .custom-file {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .custom-button {
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+
+    <div class="card-header">
+        <a href="converter/add">
+            <button type="button" class="btn btn-outline-primary">Add new converter to database</button>
+        </a>
+        <button type="button" class="btn btn-outline-secondary">Convert file</button>
+    </div>
+
+    <div class="container">
+        <h3 class="header">IAI XML CONVERTER</h3>
+        <form action="/converter/upload" method="post" enctype="multipart/form-data" class="select-container form-group">
+            <select type="text" name="converter" id="converter" class="custom-select" required>
+                {% for converter in converters %}
+                    <option value="{{ converter.name }}">{{ converter.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" id="fileToUpload" name="fileToUpload" required>
+                <label class="custom-file-label" for="customFile">Choose file to convert</label>
+            </div>
+
+            <div class="custom-button">
+                <button type="submit" value="submit" class="btn btn-primary">Convert</button>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
