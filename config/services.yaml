@@ -32,3 +32,8 @@ services:
         public: true
         arguments:
             $converter: '@App\Service\Converter\Marketplaces\MallConverter'
+    App\Service\Converter\ConverterWorker:
+        class: App\Service\Converter\ConverterWorker
+        public: true
+        arguments:
+            $projectDir: '%kernel.project_dir%/files/converted/'

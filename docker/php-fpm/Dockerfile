@@ -11,11 +11,18 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure opcache --enable-opcache \
     && docker-php-ext-install opcache
 
-RUN pecl install xdebug-2.9.0 \
+RUN pecl install xdebug-2.9.8 \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_enable = 1" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart = 1" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_connect_back = 1" >> /usr/local/etc/php/conf.d/xdebug.ini
+
+RUN touch /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "file_uploads = On" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 164M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "upload_max_filesize = 164M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 164M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
 
 RUN curl --insecure https://getcomposer.org/composer.phar -o /usr/bin/composer && chmod +x /usr/bin/composer
 

@@ -64,7 +64,6 @@ class ConverterController extends AbstractController
     public function uploadFile(Request $request): RedirectResponse
     {
         if ($request->getMethod() === 'POST') {
-            $a = $request->files->get('fileToUpload');
             $this->converterWorker->convert(
                 $request->get('converter'),
                 $request->files->get('fileToUpload')
