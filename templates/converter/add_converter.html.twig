@@ -22,21 +22,14 @@
         }
     </style>
 
-    <div class="card-header">
-        <button type="button" class="btn btn-outline-primary">Add new converter to database</button>
-        <a href="/converter">
-            <button type="button" class="btn btn-outline-secondary">Convert file</button>
-        </a>
-    </div>
-
     <div class="container">
         <h3 class="header">ADD NEW CONVERTER ENTRY</h3>
-        <form class="form-container" action="/converter/add" method="post">
+        <form class="form-container" action="{{ path('converter_add_entry') }}" method="POST">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
                 </div>
-                <input type="text" class="form-control" aria-label="Default" name="name" id="name" placeholder="Ebay" aria-describedby="inputGroup-sizing-default" required>
+                <input type="text" class="form-control" aria-label="Default" name="name" id="name" placeholder="e.g. Ebay" aria-describedby="inputGroup-sizing-default" required>
             </div>
 
             <div class="custom-button">

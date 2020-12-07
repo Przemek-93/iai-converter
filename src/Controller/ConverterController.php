@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
+use App\Crud\ConvertedFileCrud;
 use App\Crud\ConverterCrud;
-use App\Service\Converter\ConverterWorker;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,18 +13,18 @@ use Symfony\Component\Routing\Annotation\Route;
 class ConverterController extends AbstractController
 {
     protected ConverterCrud $converterCrud;
-    protected ConverterWorker $converterWorker;
+    protected ConvertedFileCrud $convertedFileCrud;
 
     public function __construct(
         ConverterCrud $converterCrud,
-        ConverterWorker $converterWorker
+        ConvertedFileCrud $convertedFileCrud
     ) {
         $this->converterCrud = $converterCrud;
-        $this->converterWorker = $converterWorker;
+        $this->convertedFileCrud = $convertedFileCrud;
     }
 
     /**
-     * @Route("/converter", name="main_view")
+     * @Route("/converter", name="converter_main_view")
      */
     public function index(): Response
     {
@@ -49,27 +49,27 @@ class ConverterController extends AbstractController
     }
 
     /**
-     * @Route("/converter/add", methods={"POST"})
+     * @Route("/converter/download", name="converter_download_view", methods={"GET"})
      */
-    public function addConverter(Request $request): RedirectResponse
+    public function download(Request $request): Response
     {
-        $response = $this->converterCrud->createConverter($request);
+        $convertedFiles = $this->convertedFileCrud->getAllFiles();
 
-        return $this->redirectToRoute('converter_add_view');
+        return $this->render(
+            'converter/download_converter.html.twig',
+            [
+                'convertedFiles' => $convertedFiles
+            ]
+        );
     }
 
     /**
-     * @Route("/converter/upload", methods={"POST", "GET"})
+     * @Route("/converter/add", name="converter_add_entry", methods={"POST"})
      */
-    public function uploadFile(Request $request): RedirectResponse
+    public function addConverter(Request $request): RedirectResponse
     {
-        if ($request->getMethod() === 'POST') {
-            $this->converterWorker->convert(
-                $request->get('converter'),
-                $request->files->get('fileToUpload')
-            );
-        }
+        $this->converterCrud->createConverter($request);
 
-        return $this->redirectToRoute('main_view');
+        return $this->redirectToRoute('converter_add_view');
     }
 }

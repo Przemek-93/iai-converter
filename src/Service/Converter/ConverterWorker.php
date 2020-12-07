@@ -2,6 +2,7 @@
 
 namespace App\Service\Converter;
 
+use App\Crud\ConvertedFileCrud;
 use App\Service\Converter\Helper\SimpleXMLExtended;
 use App\Service\Converter\Provider\ConverterFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -12,14 +13,17 @@ class ConverterWorker
     protected ConverterFactory $factory;
     protected string $marketplaceName;
     protected string $projectDir;
+    protected ConvertedFileCrud $convertedFileCrud;
     protected const FORMAT = '.xml';
 
     public function __construct(
         ConverterFactory $factory,
-        string $projectDir
+        string $projectDir,
+        ConvertedFileCrud $convertedFileCrud
     ) {
         $this->factory = $factory;
         $this->projectDir = $projectDir;
+        $this->convertedFileCrud = $convertedFileCrud;
     }
 
     public function convert(string $converterName, UploadedFile $file): void
@@ -32,9 +36,15 @@ class ConverterWorker
     protected function saveFile(SimpleXMLExtended $simpleXml): void
     {
         $currentTime = new DateTime();
-        $filename = $this->projectDir . $this->marketplaceName .
+        $fileName = $this->projectDir . $this->marketplaceName .
             $currentTime->getTimestamp() . self::FORMAT;
+        $simpleXml->saveXML($fileName);
+        $this->convertedFileCrud->insertConvertedFile($fileName, $this->marketplaceName);
+    }
 
-        $simpleXml->saveXML($filename);
+    public function downloadFile(string $url): void
+    {
+        $name = basename($url);
+        file_put_contents($name,file_get_contents($url));
     }
 }

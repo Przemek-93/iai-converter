@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}IAI XML Add Converter{% endblock %}
+
+{% block body %}
+    <style>
+        .header {
+            display: flex;
+            justify-content: center;
+            padding: 2em;
+            font-weight: bold;
+        }
+        .action-row {
+            display: flex;
+        }
+        .align-right {
+            text-align: end;
+        }
+        .btn-download {
+            margin-right: 10px;
+        }
+        .number {
+            padding-left: 50px;
+        }
+        .list {
+            padding-top: 10px;
+        }
+    </style>
+
+    <div class="container">
+        <h3 class="header">DOWNLOAD CONVERTED FILE</h3>
+
+        <ul class="list-group">
+            <div class="row header">
+                <div class="col number">No</div>
+                <div class="col file-name text-center">File Name</div>
+                <div class="col created-date text-center">Created Date</div>
+                <div class="col action align-right">Action</div>
+            </div>
+            {% set counter = 0 %}
+            {% for file in convertedFiles %}
+            <div class="row list">
+                    {% set counter = counter + 1 %}
+                    <div class="col number">{{ counter }}</div>
+                    <div class="col file-name text-center">{{ file.name | split('/')[4] }}</div>
+                    <div class="col created-date text-center">{{ file.createdAt|date('Y-m-d H:i:s') }}</div>
+                    <div class="col action-row">
+                        <form action="{{ path('converter_download_file') }}" method="POST">
+                            <button name="url" value="{{ file.name }}" class="btn btn-download"><i class="fa fa-download"></i> Download</button>
+                        </form>
+                        <form action="{{ path('converter_delete_file') }}" method="POST">
+                            <button name="name" value="{{ file.name }}" class="btn"><i class="fa fa-remove"></i> Delete</button>
+                        </form>
+                    </div>
+            </div>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}

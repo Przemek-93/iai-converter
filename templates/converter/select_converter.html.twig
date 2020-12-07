@@ -26,16 +26,9 @@
         }
     </style>
 
-    <div class="card-header">
-        <a href="converter/add">
-            <button type="button" class="btn btn-outline-primary">Add new converter to database</button>
-        </a>
-        <button type="button" class="btn btn-outline-secondary">Convert file</button>
-    </div>
-
     <div class="container">
         <h3 class="header">IAI XML CONVERTER</h3>
-        <form action="/converter/upload" method="post" enctype="multipart/form-data" class="select-container form-group">
+        <form action="{{ path('converter_upload_file') }}" method="POST" enctype="multipart/form-data" class="select-container form-group">
             <select type="text" name="converter" id="converter" class="custom-select" required>
                 {% for converter in converters %}
                     <option value="{{ converter.name }}">{{ converter.name }}</option>
