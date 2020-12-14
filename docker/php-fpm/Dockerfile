@@ -24,6 +24,8 @@ RUN touch /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 164M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "max_execution_time = 600" >> /usr/local/etc/php/conf.d/uploads.ini
 
+RUN mkdir -p /app/files/converted && chmod -R 777 /app/files
+
 RUN curl --insecure https://getcomposer.org/composer.phar -o /usr/bin/composer && chmod +x /usr/bin/composer
 
 WORKDIR /app

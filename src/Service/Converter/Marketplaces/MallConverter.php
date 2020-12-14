@@ -2,6 +2,7 @@
 
 namespace App\Service\Converter\Marketplaces;
 
+use App\Service\Converter\Helper\Converter;
 use App\Service\Converter\Helper\SimpleXMLExtended;
 use App\Service\Converter\Helper\XmlToArray;
 
@@ -9,7 +10,14 @@ class MallConverter implements MarketplaceConverterInterface
 {
     protected const HEADER = '<?xml version="1.0" encoding="utf-8"?><ITEMS></ITEMS>';
     protected const LANG = 'cze';
-    protected const INCORRECT = 'niedostepny';
+    protected const CURRENCY_VALUE = 6.4516;
+    protected Converter $converterHelper;
+
+    public function __construct(
+        Converter $converterHelper
+    ) {
+        $this->converterHelper = $converterHelper;
+    }
 
     public function convert(string $file): SimpleXMLExtended
     {
@@ -25,9 +33,6 @@ class MallConverter implements MarketplaceConverterInterface
             $item->addChild('STAGE', 'draft');
 
             $category = 'NM008';
-//            if (strpos($xmlProduct['@attributes']['code_on_card'], 'BUTY') !== false) {
-//                $category = 'NM006';
-//            }
 
             if (
                 strpos($xmlProduct['@attributes']['code_on_card'], 'PORTFEL') !== false ||
@@ -37,16 +42,16 @@ class MallConverter implements MarketplaceConverterInterface
             }
 
             $item->addChild('CATEGORY_ID', $category);
-            $item->addChild('BRAND_ID', $xmlProduct['producer']['@attributes']['name']);
-            $item->addChild('TITLE', $xmlProduct['description']['name'][0]['@value']);
-            $item->addChild('SHORTDESC', $xmlProduct['description']['short_desc'][0]['@value']);
-            $item->addChild('LONGDESC', $xmlProduct['description']['long_desc'][0]['@value']);
+            $item->addChild('BRAND_ID', 'SOLIER');
+            $item->addChild('TITLE', $xmlProduct['description']['name'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG)]['@value']);
+            $item->addChild('SHORTDESC', $xmlProduct['description']['short_desc'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG)]['@value']);
+            $item->addChild('LONGDESC', $xmlProduct['description']['long_desc'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG)]['@value']);
             $item->addChild('PRIORITY', 3);
             $item->addChild('PACKAGE_SIZE', 'smallbox');
             $item->addChild('BARCODE', $xmlProduct['sizes']['size']['@attributes']['code_producer'] ?? $xmlProduct['sizes']['size']['@attributes']['code']);
-            $item->addChild('PRICE', $xmlProduct['price']['@attributes']['net']);
-            $item->addChild('VAT', $xmlProduct['@attributes']['vat']);
-            $item->addChild('RRP', $xmlProduct['price']['@attributes']['gross']);
+            $item->addChild('PRICE', $this->converterHelper->currencyExchange(self::CURRENCY_VALUE, $xmlProduct['price']['@attributes']['net']));
+            $item->addChild('VAT', 21);
+            $item->addChild('RRP', $this->converterHelper->currencyExchange(self::CURRENCY_VALUE, $xmlProduct['price']['@attributes']['gross']));
 
             if (count($xmlProduct['images']['large']['image']) > 2) {
                 $i = 1;
@@ -76,31 +81,5 @@ class MallConverter implements MarketplaceConverterInterface
         }
 
         return $simpleXML;
-    }
-
-    private function getParameter($product, $type)
-    {
-        foreach ($product['parameters'] as $parameters) {
-            if (array_key_exists(0, $parameters)) {
-                foreach ($parameters as $parameter) {
-                    if ($parameter['@attributes']['name'] === $type) {
-                        if (isset($parameter['value'])) {
-                            return $parameter['value']['@attributes']['name'];
-                        } else {
-                            return self::INCORRECT;
-                        }
-                    }
-                }
-            }
-
-            if ($parameters['@attributes']['name'] === $type) {
-                if (isset($parameters['value'])) {
-                    return $parameters['value']['@attributes']['name'];
-                } else {
-                    return self::INCORRECT;
-                }
-            }
-            return self::INCORRECT;
-        }
     }
 }

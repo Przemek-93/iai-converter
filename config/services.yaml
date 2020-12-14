@@ -32,6 +32,16 @@ services:
         public: true
         arguments:
             $converter: '@App\Service\Converter\Marketplaces\MallConverter'
+    ZalandoConverterProvider:
+        class: App\Service\Converter\Provider\ConverterProvider
+        public: true
+        arguments:
+            $converter: '@App\Service\Converter\Marketplaces\ZalandoConverter'
+    ZalandofeedConverterProvider:
+        class: App\Service\Converter\Provider\ConverterProvider
+        public: true
+        arguments:
+            $converter: '@App\Service\Converter\Marketplaces\ZalandofeedConverter'
     App\Service\Converter\ConverterWorker:
         class: App\Service\Converter\ConverterWorker
         public: true
