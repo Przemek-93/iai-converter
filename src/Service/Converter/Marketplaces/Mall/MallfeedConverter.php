@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Service\Converter\Marketplaces;
+namespace App\Service\Converter\Marketplaces\Mall;
 
 use App\Service\Converter\Helper\SimpleXMLExtended;
 use App\Service\Converter\Helper\XmlToArray;
+use App\Service\Converter\Marketplaces\MarketplaceConverterInterface;
 
 class MallfeedConverter implements MarketplaceConverterInterface
 {

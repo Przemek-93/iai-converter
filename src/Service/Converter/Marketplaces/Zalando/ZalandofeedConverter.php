@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Service\Converter\Marketplaces;
+namespace App\Service\Converter\Marketplaces\Zalando;
 
 use App\Service\Converter\Helper\Converter;
 use App\Service\Converter\Helper\SimpleXMLExtended;
 use App\Service\Converter\Helper\XmlToArray;
+use App\Service\Converter\Marketplaces\MarketplaceConverterInterface;
 
 class ZalandofeedConverter implements MarketplaceConverterInterface
 {
