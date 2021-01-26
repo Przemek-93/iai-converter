@@ -37,9 +37,15 @@ class MallConverter implements MarketplaceConverterInterface
             $categoryId = $this->getExternalCategoryById($xmlProduct['category']['@attributes']['id']);
             $item->addChild('CATEGORY_ID', $categoryId);
             $item->addChild('BRAND_ID', 'SOLIER');
-            $item->addChild('TITLE', $xmlProduct['description']['name'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']);
-            $item->addChild('SHORTDESC', $xmlProduct['description']['short_desc'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']);
-            $item->addChild('LONGDESC', $xmlProduct['description']['long_desc'][$this->converterHelper->findLanguage($xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']);
+            $item->addChild('TITLE', $xmlProduct['description']['name'][$this->converterHelper->findLanguage(
+                $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
+            );
+            $item->addChild('SHORTDESC', $xmlProduct['description']['short_desc'][$this->converterHelper->findLanguage(
+                $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
+            );
+            $item->addChild('LONGDESC', $xmlProduct['description']['long_desc'][$this->converterHelper->findLanguage(
+                $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
+            );
             $item->addChild('PRIORITY', 3);
             $item->addChild('PACKAGE_SIZE', 'smallbox');
             $item->addChild('BARCODE', $xmlProduct['sizes']['size']['@attributes']['code_producer'] ?? $xmlProduct['sizes']['size']['@attributes']['code']);

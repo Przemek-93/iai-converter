@@ -89,4 +89,25 @@ class Converter
 
         return $value;
     }
+
+    public function getParameterById(array $parameters, string $id): array
+    {
+        $foundedParameters = [];
+        if (count($parameters)) {
+            foreach (reset($parameters) as $parameter) {
+                if (!isset($parameter['@attributes'])){
+                    continue;
+                }
+                if ($parameter['@attributes']['id'] === $id) {
+                    if (!isset($parameter['value']['@attributes'])){
+                        $foundedParameters[] = $parameter['value'][1]['@attributes']['name'];
+                        continue;
+                    }
+                    $foundedParameters[] = $parameter['value']['@attributes']['name'];
+                }
+            }
+        }
+
+        return $foundedParameters;
+    }
 }
