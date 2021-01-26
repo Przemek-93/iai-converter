@@ -26,8 +26,7 @@ class MallConverter implements MarketplaceConverterInterface
         $simpleXML = new SimpleXMLExtended(self::HEADER);
         $files = XmlToArray::createArray($file);
         foreach ($files['offer']['products']['product'] as $xmlProduct) {
-            if (strpos($xmlProduct['@attributes']['code_on_card'], 'BUTY') !== false ||
-                $xmlProduct['category']['@attributes']['id'] === '1214553903') {
+            if ($this->messDetector($xmlProduct)) {
                 continue;
             }
 
@@ -41,10 +40,10 @@ class MallConverter implements MarketplaceConverterInterface
                 $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
             );
             $item->addChild('SHORTDESC', $xmlProduct['description']['short_desc'][$this->converterHelper->findLanguage(
-                $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
+                $xmlProduct['description']['short_desc'], self::LANG, self::LANG)]['@value']
             );
             $item->addChild('LONGDESC', $xmlProduct['description']['long_desc'][$this->converterHelper->findLanguage(
-                $xmlProduct['description']['name'], self::LANG, self::LANG)]['@value']
+                $xmlProduct['description']['long_desc'], self::LANG, self::LANG)]['@value']
             );
             $item->addChild('PRIORITY', 3);
             $item->addChild('PACKAGE_SIZE', 'smallbox');
@@ -53,26 +52,7 @@ class MallConverter implements MarketplaceConverterInterface
             $item->addChild('VAT', 21);
             $item->addChild('RRP', $this->converterHelper->currencyExchange(self::CURRENCY_VALUE, $xmlProduct['price']['@attributes']['gross']));
             $this->addSpecificParameterByCategory($item, $xmlProduct['category']['@attributes']['id'], $categoryId);
-
-            if (count($xmlProduct['images']['large']['image']) > 2) {
-                $i = 1;
-                foreach ($xmlProduct['images']['large']['image'] as $key => $image) {
-                    $media = $item->addChild('MEDIA');
-                    $media->addChild('URL',  $image['@attributes']['url']);
-                    if ($key === 0) {
-                        $media->addChild('MAIN', 'true');
-                        continue;
-                    }
-
-                    $media->addChild('MAIN',  'false');
-
-                    if ($i === 5) {
-                        break;
-                    }
-                    $i++;
-                }
-            }
-
+            $this->addMedia($xmlProduct['images']['large']['image'], $item);
             $item->addChild('DELIVERY_DELAY', 0);
             $item->addChild('FREE_DELIVERY', 'false');
         }
@@ -82,6 +62,47 @@ class MallConverter implements MarketplaceConverterInterface
         }
 
         return $simpleXML;
+    }
+
+    protected function messDetector(array $xmlProduct): bool
+    {
+        if (strpos($xmlProduct['@attributes']['code_on_card'], 'BUTY') !== false ||
+            $xmlProduct['category']['@attributes']['id'] === '1214553903') {
+            return true;
+        }
+
+        if (
+            $this->converterHelper->findLanguage(
+                $xmlProduct['description']['short_desc'], self::LANG, self::LANG) === null
+        ) {
+            return true;
+        }
+
+        if (
+            $this->converterHelper->findLanguage(
+                $xmlProduct['description']['name'], self::LANG, self::LANG) === null
+        ) {
+            return true;
+        }
+
+        if (
+            $this->converterHelper->findLanguage(
+                $xmlProduct['description']['long_desc'], self::LANG, self::LANG) === null
+        ) {
+            return true;
+        }
+
+        if (in_array($xmlProduct['@attributes']['id'],
+            [
+                '16945', '17107', '17108', '17223', '17225',
+                '17226', '17228', '17230', '17234', '19069',
+                '19085', '19584', '27344'
+            ]
+        )) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getExternalCategoryById(string $categoryId): string
@@ -109,7 +130,7 @@ class MallConverter implements MarketplaceConverterInterface
             default:
                 $externalCategoryId = 'NM009';
         }
-        
+
         return $externalCategoryId;
     }
 
@@ -174,6 +195,32 @@ class MallConverter implements MarketplaceConverterInterface
                 $param->addChild('VALUE', 'Dámské, Unisex');
                 break;
         }
-        
+
+    }
+
+    protected function addMedia(array $images, SimpleXMLElement $item): void
+    {
+        if (count($images) >=  2 && !isset($images['@value'])) {
+            $i = 1;
+            foreach ($images as $key => $image) {
+                $media = $item->addChild('MEDIA');
+                $media->addChild('URL',  $image['@attributes']['url']);
+                if ($key === 0) {
+                    $media->addChild('MAIN', 'true');
+                    continue;
+                }
+
+                $media->addChild('MAIN',  'false');
+
+                if ($i === 5) {
+                    break;
+                }
+                $i++;
+            }
+        } else {
+            $media = $item->addChild('MEDIA');
+            $media->addChild('URL',  $images['@attributes']['url']);
+            $media->addChild('MAIN', 'true');
+        }
     }
 }
