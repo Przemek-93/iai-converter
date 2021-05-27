@@ -75,6 +75,19 @@ class ZalandoHelper
         $this->converterHelper = $converterHelper;
     }
 
+    public function productFiltration(array $products): array
+    {
+        $filteredProducts = [];
+        foreach ($products as $product) {
+            $filteredProducts[$product['price']['@attributes']['gross']]
+            [
+                $this->getName($product['description'], self::DEFAULT_LANG_SHORT, self::ADDITIONAL_LANG_SHORT)
+            ] = $product;
+        }
+
+        return $filteredProducts;
+    }
+
     public function excludeFailureProducts(array &$nameArray, array $xmlProduct): bool
     {
         if (stripos($xmlProduct['@attributes']['code_on_card'], 'BUTY') !== false) {
@@ -109,7 +122,7 @@ class ZalandoHelper
         return true;
     }
 
-    protected function getName(
+    public function getName(
         array $description,
         string $mainLang,
         string $defaultLang
@@ -124,5 +137,46 @@ class ZalandoHelper
         }
 
         return $name;
+    }
+
+    public function produceSequence(array $xmlProduct): string
+    {
+        $defaultName = $this->getName(
+            $xmlProduct['description'],
+            self::DEFAULT_LANG_SHORT,
+            self::ADDITIONAL_LANG_SHORT
+        );
+        $defaultNameArray = explode(' ', mb_strtolower($defaultName));
+        $searchStrings = [
+            'bag', 'folder', 'case', 'briefcase', 'wallet', 'handbag', 'backpack', 'holder', 'crossbody',
+            'belt', 'organiser', 'luggage', 'protection', 'suitcase', 'cover', 'balm', 'liquid'
+        ];
+        $defaultSequence = $this->returnNameKeywordSequence($defaultNameArray, $searchStrings);
+
+        $defaultNameArray = explode(' ', $defaultName);
+        $defaultWord = mb_strtoupper(reset($defaultNameArray));
+
+        return ucfirst(strtolower($defaultSequence . ' - ' . $defaultWord));
+    }
+
+    protected function returnNameKeywordSequence(array $array, array $searchStrings): string
+    {
+        foreach ($searchStrings as $string) {
+            $key = array_search($string, $array);
+            if ($key !== false) {
+                $foundedWordKey = $key;
+            }
+        }
+
+        if (!isset($foundedWordKey)) {
+            $foundedWordKey = 1;
+        }
+
+        $sequence = $array[$foundedWordKey];
+        if ($foundedWordKey > 0) {
+            $sequence = $array[$foundedWordKey - 1] . ' ' . $array[$foundedWordKey];
+        }
+
+        return $sequence;
     }
 }

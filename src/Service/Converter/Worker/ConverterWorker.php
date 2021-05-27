@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Service\Converter;
+namespace App\Service\Converter\Worker;
 
 use App\Crud\ConvertedFileCrud;
 use App\Service\Converter\Helper\SimpleXMLExtended;
-use App\Service\Converter\Provider\ConverterFactory;
+use App\Service\Converter\Factory\ConverterFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use DateTime;
 

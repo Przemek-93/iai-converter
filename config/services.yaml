@@ -47,8 +47,8 @@ services:
         public: true
         arguments:
             $converter: '@App\Service\Converter\Marketplaces\Zalando\ZalandofeedConverter'
-    App\Service\Converter\ConverterWorker:
-        class: App\Service\Converter\ConverterWorker
+    App\Service\Converter\Worker\ConverterWorker:
+        class: App\Service\Converter\Worker\ConverterWorker
         public: true
         arguments:
             $projectDir: '%kernel.project_dir%/files/converted/'

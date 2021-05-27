@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Service\Converter\Provider;
+namespace App\Service\Converter\Factory;
 
+use App\Service\Converter\Provider\ConverterProvider;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ConverterFactory

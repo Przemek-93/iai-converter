@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Crud\ConvertedFileCrud;
-use App\Service\Converter\ConverterWorker;
+use App\Service\Converter\Worker\ConverterWorker;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;

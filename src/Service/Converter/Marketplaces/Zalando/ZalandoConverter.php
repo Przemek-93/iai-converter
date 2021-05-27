@@ -52,23 +52,6 @@ class ZalandoConverter implements MarketplaceConverterInterface
         return $simpleXMLMain;
     }
 
-    protected function getName(
-        array $description,
-        string $mainLang,
-        string $defaultLang
-    ): string {
-        $offset = $this->converterHelper->findLanguage($description['name'], $mainLang, $defaultLang);
-        if ($offset) {
-            $name = $description['name'][$offset]['@value'];
-        }
-
-        if (!$offset) {
-            $name = $description['name']['@value'];
-        }
-
-        return $name;
-    }
-
     protected function getDescription(
         array $description,
         string $mainLang,
@@ -93,29 +76,13 @@ class ZalandoConverter implements MarketplaceConverterInterface
     protected function addNameTag(SimpleXMLElement $item, array $xmlProduct): void
     {
         $name = $item->addChild('P_NAME');
-        $nameChildFirst = $name->addChild('VALUE', $this->produceSequence($xmlProduct, $item));
+        $nameChildFirst = $name->addChild('VALUE', $this->zalandoHelper->produceSequence($xmlProduct));
         $nameChildFirst->addAttribute('xml:lang', ZalandoHelper::DEFAULT_LANG, 'xml');
-    }
-
-    protected function produceSequence(array $xmlProduct, SimpleXMLElement $item): string
-    {
-        $defaultName = $this->getName($xmlProduct['description'], ZalandoHelper::DEFAULT_LANG_SHORT, ZalandoHelper::ADDITIONAL_LANG_SHORT);
-        $defaultNameArray = explode(' ', mb_strtolower($defaultName));
-        $searchStrings = [
-            'bag', 'folder', 'case', 'briefcase', 'wallet', 'handbag', 'backpack', 'holder', 'crossbody',
-            'belt', 'organiser', 'luggage', 'protection', 'suitcase', 'cover', 'balm', 'liquid'
-        ];
-        $defaultSequence = $this->returnNameKeywordSequence($defaultNameArray, $searchStrings);
-
-        $defaultNameArray = explode(' ', $defaultName);
-        $defaultWord = mb_strtoupper(reset($defaultNameArray));
-
-        return ucfirst(strtolower($defaultSequence . ' - ' . $defaultWord));
     }
 
     protected function addNamesChild(SimpleXMLElement $item, array $xmlProduct): void
     {
-        $words = explode(' - ', $this->produceSequence($xmlProduct, $item));
+        $words = explode(' - ', $this->zalandoHelper->produceSequence($xmlProduct));
         $pname = $item->addChild('P_NAME_KEYWORD');
         $value = $pname->addChild('VALUE', ucfirst($words[0]));
         $value->addAttribute('xml:lang', ZalandoHelper::DEFAULT_LANG,'xml');
@@ -133,30 +100,13 @@ class ZalandoConverter implements MarketplaceConverterInterface
         $value->addAttribute('xml:lang', ZalandoHelper::DEFAULT_LANG,'xml');
     }
 
-    protected function returnNameKeywordSequence(array $array, array $searchStrings): string
-    {
-        foreach ($searchStrings as $string) {
-            $key = array_search($string, $array);
-            if ($key !== false) {
-                $foundedWordKey = $key;
-            }
-        }
-
-        if (!isset($foundedWordKey)) {
-            $foundedWordKey = 1;
-        }
-
-        $sequence = $array[$foundedWordKey];
-        if ($foundedWordKey > 0) {
-            $sequence = $array[$foundedWordKey - 1] . ' ' . $array[$foundedWordKey];
-        }
-
-        return $sequence;
-    }
-
     protected function addProperName(SimpleXMLElement $item, array $xmlProduct): void
     {
-        $defaultName = $this->getName($xmlProduct['description'], ZalandoHelper::DEFAULT_LANG_SHORT, ZalandoHelper::ADDITIONAL_LANG_SHORT);
+        $defaultName = $this->zalandoHelper->getName(
+            $xmlProduct['description'],
+            ZalandoHelper::DEFAULT_LANG_SHORT,
+            ZalandoHelper::ADDITIONAL_LANG_SHORT
+        );
         $defaultNameArray = explode(' ', $defaultName);
         $defaultWord = mb_strtoupper(end($defaultNameArray));
 
@@ -243,7 +193,10 @@ class ZalandoConverter implements MarketplaceConverterInterface
         $price = $priceData->addChild('A_PRICE');
         $price->addAttribute('channel', ZalandoHelper::CHANNEL_DE_ID);
         $price->addAttribute('currency', ZalandoHelper::CURRENCY_DE);
-        $price->addChild('A_VK', round($xmlProduct['price']['@attributes']['gross'] / ZalandoHelper::CURRENCY_DE_VALUE, 2));
+        $price->addChild(
+            'A_VK',
+            round($xmlProduct['price']['@attributes']['gross'] / ZalandoHelper::CURRENCY_DE_VALUE, 2)
+        );
 
         $price = $priceData->addChild('A_PRICE');
         $price->addAttribute('channel', ZalandoHelper::CHANNEL_PL_ID);
@@ -255,7 +208,11 @@ class ZalandoConverter implements MarketplaceConverterInterface
     {
         $text = $item->addChild('P_TEXT');
         $textChildFirst = $text->addChild('VALUE',
-            $this->getDescription($xmlProduct['description'], ZalandoHelper::DEFAULT_LANG_SHORT, ZalandoHelper::ADDITIONAL_LANG_SHORT)
+            $this->getDescription(
+                $xmlProduct['description'],
+                ZalandoHelper::DEFAULT_LANG_SHORT,
+                ZalandoHelper::ADDITIONAL_LANG_SHORT
+            )
         );
         $textChildFirst->addAttribute('xml:lang', ZalandoHelper::DEFAULT_LANG,'xml');
     }
@@ -270,7 +227,7 @@ class ZalandoConverter implements MarketplaceConverterInterface
 
     protected function addKeywordsTag(SimpleXMLElement $item, array $xmlProduct): void
     {
-        $sequence = str_replace(' - ', ' ', $this->produceSequence($xmlProduct, $item));
+        $sequence = str_replace(' - ', ' ', $this->zalandoHelper->produceSequence($xmlProduct));
         $arraySequences = explode(' ', $sequence);
         $keywords = $item->addChild('P_KEYWORDS');
         foreach ($arraySequences as $word) {
@@ -289,7 +246,10 @@ class ZalandoConverter implements MarketplaceConverterInterface
 
         $parameter = [];
         if (isset($xmlProduct['parameters'])) {
-            $parameter = $this->converterHelper->getParameterById($xmlProduct['parameters'], ZalandoHelper::MATERIAL_ID);
+            $parameter = $this->converterHelper->getParameterById(
+                $xmlProduct['parameters'],
+                ZalandoHelper::MATERIAL_ID
+            );
         }
 
         $parameter = $this->mapMaterialToEng($parameter);
@@ -329,7 +289,10 @@ class ZalandoConverter implements MarketplaceConverterInterface
         $tagsChild = $tag->addChild('VALUES');
         $tagsChild = $tagsChild->addChild('VALUE');
         $tagsChild->addAttribute('identifier', 'key');
-        $tagsChild->addAttribute('key', $this->getGenderByProductCode(mb_strtoupper((string)$xmlProduct['@attributes']['code_on_card'])));
+        $tagsChild->addAttribute(
+            'key',
+            $this->getGenderByProductCode(mb_strtoupper((string)$xmlProduct['@attributes']['code_on_card']))
+        );
 
         $tag = $tagsData->addChild('P_TAG');
         $tag->addAttribute('identifier', 'key');
@@ -382,7 +345,10 @@ class ZalandoConverter implements MarketplaceConverterInterface
     protected function addCategoryTag(SimpleXMLElement $item, array $xmlProduct): void
     {
         $categories = $item->addChild('P_CATEGORIES');
-        $category = $categories->addChild('P_CATEGORY', mb_strtoupper((str_replace('/', ' | ', $xmlProduct['category']['@attributes']['name']))));
+        $category = $categories->addChild(
+            'P_CATEGORY',
+            mb_strtoupper((str_replace('/', ' | ', $xmlProduct['category']['@attributes']['name'])))
+        );
         $category->addAttribute('type', 'cluster');
         $category->addAttribute('identifier', 'key');
         $category->addAttribute('key', 'clust1');
